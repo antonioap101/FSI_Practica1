@@ -6,6 +6,7 @@ functions."""
 
 
 from utils import *
+from collections import deque
 import random
 import sys
 
@@ -109,6 +110,97 @@ def graph_search(problem, fringe):
     return None
 
 
+    
+def bab(problem, fringe):
+    
+    def expandir_estado(nodo):
+        lista_expansion = []
+        lista_operadores = nodo.expand(problem)
+        for nodo in lista_operadores:
+            nodo_sucesor = nodo
+            lista_expansion.append(nodo_sucesor)
+        return lista_expansion
+    
+    visitados = []
+    resuelto = False
+    num_visitados = 0
+    fringe.append(Node(problem.initial))
+    generados = 1
+    while len(fringe) != 0 and resuelto != True:
+        nodo = fringe.popleft();
+        num_visitados += 1;
+        if problem.goal_test(nodo.state):
+            estado = nodo
+            resuelto = True
+        if nodo.state not in visitados:
+            visitados.append(nodo.state)
+            lista = expandir_estado(nodo)
+            generados += len(lista)
+            fringe.extend(lista)
+            n = len(fringe)
+            for i in range(n):
+                # Últimos i elementos ya están en su lugar correcto
+                for j in range(0, n-i-1):
+                    # Intercambia si el elemento encontrado es mayor que el siguiente elemento
+                    if fringe[j].path_cost > fringe[j+1].path_cost:
+                        fringe[j], fringe[j+1] = fringe[j+1], fringe[j]
+        lista = []
+        
+    generados -= len(estado.expand(problem))
+    if(resuelto == True):
+        print("Nodos visitados: ", num_visitados)
+        print("Nodos generados: ", gen_nodes)
+        return estado
+    else:
+        return ("El objetivo no se ha podido alcanzar")
+            
+def bab_subestimacion(problem, fringe):
+    
+    def expandir_estado(nodo):
+        lista_expansion = []
+        lista_operadores = nodo.expand(problem)
+        for nodo in lista_operadores:
+            nodo_sucesor = nodo
+            lista_expansion.append(nodo_sucesor)
+        return lista_expansion
+    
+    visitados = {}
+    resuelto = False
+    fringe.append(Node(problem.initial))
+    num_visitados = 0
+    generados = 1
+    while len(fringe) != 0 and resuelto != True:
+        nodo = fringe.popleft();
+        num_visitados += 1
+        if problem.goal_test(nodo.state):
+            estado = nodo
+            resuelto = True
+            
+        if nodo.state not in visitados:
+            visitados[nodo.state] = True
+            lista = expandir_estado(nodo)
+            generados += len(lista)
+            fringe.extend(lista)
+            n = len(fringe)
+            for i in range(n):
+                # Últimos i elementos ya están en su lugar correcto
+                for j in range(0, n-i-1):
+                    # Intercambia si el elemento encontrado es mayor que el siguiente elemento
+                    if (fringe[j].path_cost + problem.h(fringe[j])) > (fringe[j+1].path_cost  + problem.h(fringe[j+1])):
+                        fringe[j], fringe[j+1] = fringe[j+1], fringe[j]
+        
+        lista = []
+        
+    generados -= len(estado.expand(problem))
+    if(resuelto == True):
+        print("Nodos visitados: ", num_visitados)
+        print("Nodos generados: ", gen_nodes)
+        return nodo
+    else:
+        return ("El objetivo no se ha podido alcanzar")
+    
+
+
 def breadth_first_graph_search(problem):
     """Search the shallowest nodes in the search tree first. [p 74]"""
     return graph_search(problem, FIFOQueue())  # FIFOQueue -> fringe
@@ -118,7 +210,11 @@ def depth_first_graph_search(problem):
     """Search the deepest nodes in the search tree first. [p 74]"""
     return graph_search(problem, Stack())
 
+def branch_and_bound(problem):
+    return bab(problem, deque())
 
+def branch_and_bound_underestimation(problem):
+    return bab_subestimacion(problem, deque())
 
 # _____________________________________________________________________________
 # The remainder of this file implements examples for the search algorithms.
@@ -262,3 +358,4 @@ class GPSProblem(Problem):
             return int(distance(locs[node.state], locs[self.goal]))
         else:
             return infinity
+
