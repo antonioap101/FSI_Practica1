@@ -66,6 +66,35 @@ def graph_search_old(problem, fringe):
 
     return None
 
+
+def depth_first_graph_search_generator(problem, fringe, sort_function=None):
+    """Search the deepest nodes in the search tree first. [p 74]"""
+    closed = set()
+    fringe.append(Node(problem.initial))
+    generated = 1  # Counter for generated nodes (starts in 1)
+    visited = 0    # Counter for visited nodes
+
+    while fringe:
+        if sort_function:
+            fringe = deque(sorted(list(fringe), key=lambda n: sort_function(n, problem)))
+            node = fringe.popleft()
+        else:
+            node = fringe.pop()
+
+        visited += 1
+        if problem.goal_test(node.state):
+            yield generated, visited, node.path_cost, node.path(), closed, fringe
+            return
+        if node.state not in closed:
+            closed.add(node.state)
+            successors = node.expand(problem)
+            generated += len(successors)
+            fringe.extend(successors)
+            yield generated, visited, node.path_cost, node.path(), closed, fringe
+
+    yield generated, visited, 0, None, closed, fringe
+
+
 def graph_search(problem, fringe, sort_function=None):
     """Search through the successors of a problem to find a goal."""
     closed = set()
