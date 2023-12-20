@@ -1,6 +1,7 @@
 import tkinter as tk
 from collections import deque
 from tkinter import font
+from tkinter import ttk  # Importar ttk para el Combobox
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -116,16 +117,19 @@ class UI:
             canvas.draw()
 
 
+def get_selected_problem():
+    selected_route = route_selector.get().split(' - ')
+    if len(selected_route) == 2:
+        start, end = selected_route
+        return GPSProblem(start, end, romania)
+    return None
 
 # Aquí debes definir las funciones que se llamarán cuando se presionen los botones
 def on_dfs():
     print("DFS algorithm")
 
-    # Obtenemos el problema de GPS que deseamos resolver
-    problem = GPSProblem('A', 'B', romania)  # Usamos las claves tal como están definidas en el grafo
-
-    # Creamos el generador
-    search = graph_search_generator(problem, Stack())
+    # Obtenemos el problema de GPS que deseamos resolver y creamos el generador
+    search = graph_search_generator(get_selected_problem(), Stack())
 
     # Inicia la actualización de la UI
     UI(search).update_ui()
@@ -134,11 +138,8 @@ def on_dfs():
 def on_bfs():
     print("BFS algorithm")
 
-    # Obtenemos el problema de GPS que deseamos resolver
-    problem = GPSProblem('A', 'B', romania)  # Usamos las claves tal como están definidas en el grafo
-
-    # Creamos el generador
-    search = graph_search_generator(problem, FIFOQueue())
+    # Obtenemos el problema de GPS que deseamos resolver y creamos el generador
+    search = graph_search_generator(get_selected_problem(), FIFOQueue())
 
     # Inicia la actualización de la UI
     UI(search).update_ui()
@@ -147,14 +148,11 @@ def on_bfs():
 def on_bab():
     print("Branch and Bound algorithm")
 
-    # Obtenemos el problema de GPS que deseamos resolver
-    problem = GPSProblem('A', 'B', romania)  # Usamos las claves tal como están definidas en el grafo
-
     def sort_by_path_cost(node, problem):
         return node.path_cost
 
-    # Creamos el generador
-    search = graph_search_generator(problem, deque(), sort_by_path_cost)
+    # Obtenemos el problema de GPS que deseamos resolver y creamos el generador
+    search = graph_search_generator(get_selected_problem(), deque(), sort_by_path_cost)
 
     # Inicia la actualización de la UI
     UI(search).update_ui()
@@ -163,17 +161,11 @@ def on_bab():
 def on_bab_s():
     print("Branch and Bound with Underestimation algorithm")
 
-    # Obtenemos el problema de GPS que deseamos resolver
-    problem = GPSProblem('A', 'B', romania)  # Usamos las claves tal como están definidas en el grafo
-
     def underestimation(node, problem):
         return node.path_cost + problem.h(node)
 
     # Creamos el generador
-    search = graph_search_generator(problem, deque(), underestimation)
-
-    # Creamos el generador
-    search = graph_search_generator(problem, Stack())
+    search = graph_search_generator(get_selected_problem(), deque(), underestimation)
 
     # Inicia la actualización de la UI
     UI(search).update_ui()
@@ -184,20 +176,50 @@ def on_bab_s():
 root = tk.Tk()
 root.title("Visualizador de Algoritmos de Búsqueda")
 
+# Crear una fuente personalizada con tamaño y negrita
+custom_font = font.Font(family='Helvetica', size=14, weight='bold')
+
+
 # Crear un frame para el panel del grafo
 graph_frame = tk.Frame(root)
 graph_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+# ..................... GRAFO .....................
 # Dibujar el grafo en la figura y añadirlo al frame de Tkinter
 fig, ax, G, pos = draw_fixed_graph()
 canvas = FigureCanvasTkAgg(fig, master=graph_frame)
 canvas_widget = canvas.get_tk_widget()
 canvas_widget.pack(fill=tk.BOTH, expand=True)
 
-# Crear el frame para los botones de selección de algoritmo
-buttons_frame = tk.Frame(root)
-buttons_frame.pack(side=tk.RIGHT, padx=20)
+# ..................... INFORMACION ADDICONAL ABAJO  .....................
+# Agregamos la etiqueta para mostrar el estado del algoritmo
+status_label = tk.Label(graph_frame, text="", justify=tk.LEFT, font=custom_font)
+status_label.pack(side=tk.BOTTOM, anchor='sw')
 
+# ================================ PANEL DERECHO ===================================
+
+# Crear el frame para los botones de selección de algoritmo
+right_frame = tk.Frame(root)
+right_frame.pack(side=tk.RIGHT, padx=20)
+
+# ..................... LISTA DESPLEGABLE .....................
+# Lista de recorridos disponibles
+routes = ['A - B', 'O - E', 'G - Z', 'N - D', 'M - F']
+
+# Crear un frame para la selección de recorridos
+route_selection_frame = tk.Frame(right_frame)
+route_selection_frame.pack(side=tk.TOP, pady=40)
+
+# Crear una etiqueta para el selector de recorridos
+route_label = tk.Label(route_selection_frame, text="Recorrido:", font=custom_font)
+route_label.pack(side=tk.TOP)
+
+# Crear el Combobox para seleccionar recorridos
+route_selector = ttk.Combobox(route_selection_frame, values=routes, font=custom_font, state="readonly", width=5)
+route_selector.pack(side=tk.TOP)
+route_selector.current(0)  # Establecer la selección predeterminada
+
+# ..................... BOTONES .....................
 # Crear botones para cada algoritmo de búsqueda con diseño personalizado
 button_style = { 'fg': 'black', 'font': ('Helvetica', 16, 'bold'),
                 'borderwidth': 0, 'relief': tk.FLAT, 'compound': tk.CENTER,
@@ -205,28 +227,21 @@ button_style = { 'fg': 'black', 'font': ('Helvetica', 16, 'bold'),
 
 
 # Crear botones para cada algoritmo de búsqueda
-bfs_button = tk.Button(buttons_frame, text='BFS', command=on_bfs, **button_style)
-dfs_button = tk.Button(buttons_frame, text='DFS', command=on_dfs, **button_style)
-bab_button = tk.Button(buttons_frame, text='B&B', command=on_bab, **button_style)
-bab_s_button = tk.Button(buttons_frame, text='B&B Sub', command=on_bab_s, **button_style)
+bfs_button = tk.Button(right_frame, text='BFS', command=on_bfs, **button_style)
+dfs_button = tk.Button(right_frame, text='DFS', command=on_dfs, **button_style)
+bab_button = tk.Button(right_frame, text='B&B', command=on_bab, **button_style)
+bab_s_button = tk.Button(right_frame, text='B&B Sub', command=on_bab_s, **button_style)
 
 # Asociar eventos de entrada/salida a los botones para el efecto de sombra
 for b in [bfs_button, dfs_button, bab_button, bab_s_button]:
     b.bind("<Enter>", lambda event, btn=b: btn.config(relief=tk.RAISED))
     b.bind("<Leave>", lambda event, btn=b: btn.config(relief=tk.FLAT))
+    b.pack(side=tk.TOP, pady=10)
 
-# Crear una fuente personalizada con tamaño y negrita
-custom_font = font.Font(family='Helvetica', size=14, weight='bold')
-
-# Agregamos la etiqueta para mostrar el estado del algoritmo
-status_label = tk.Label(graph_frame, text="", justify=tk.LEFT, font=custom_font)
-status_label.pack(side=tk.BOTTOM, anchor='sw')
-
-
-# =========================LEYENDA ============================
+# ..................... LEYENDA .....................
 # Creamos un frame para contener los círculos de colores y sus descripciones
-legend_frame = tk.Frame(buttons_frame)
-legend_frame.pack(side=tk.TOP, anchor='se', padx=10, pady=10)
+legend_frame = tk.Frame(right_frame)
+legend_frame.pack(side=tk.BOTTOM, anchor='se', padx=10, pady=10)
 
 # Creamos una etiqueta para mostrar la leyenda de colores
 legend_label = tk.Label(legend_frame,
@@ -247,10 +262,5 @@ create_color_legend(1, '#A9FF00', "Verde = Visitado")
 create_color_legend(2, '#FFD600', "Amarillo = Visible")
 create_color_legend(3, '#00A9FF', "Azul = No Visitado")
 create_color_legend(4, '#FF00A9', "Rojo = Nodo Actual")
-
-bfs_button.pack(side=tk.TOP, pady=10)
-dfs_button.pack(side=tk.TOP, pady=10)
-bab_button.pack(side=tk.TOP, pady=10)
-bab_s_button.pack(side=tk.TOP, pady=10)
 
 root.mainloop()
