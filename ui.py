@@ -21,6 +21,27 @@ node_labels = {'A': 'Arad', 'B': 'Bucharest', 'C': 'Craiova', 'D': 'Drobeta', 'E
                'M': 'Mehadia', 'N': 'Neamt', 'O': 'Oradea', 'P': 'Pitesti', 'R': 'Rimnicu Vilcea',
                'S': 'Sibiu', 'T': 'Timisoara', 'U': 'Urziceni', 'V': 'Vaslui', 'Z': 'Zerind'}
 
+global_ui = None
+global_algorithm = None
+
+def set_global_ui(search):
+    global global_ui
+    global_ui = UI(search)
+
+def advance_global_ui():
+    if global_ui:
+        print("RIGHT ARROW CLICK")
+        global_ui.advance_ui()
+    else:
+        raise Exception("Global UI not set")
+
+def reverse_global_ui():
+    if global_ui:
+        print("LEFT ARROW CLICK")
+        global_ui.reverse_ui()
+    else:
+        raise Exception("Global UI not set")
+
 
 # Función para dibujar el grafo fijo como en la imagen
 def draw_fixed_graph():
@@ -48,73 +69,102 @@ def draw_fixed_graph():
 class UI:
     def __init__(self, search):
         self.visited_nodes = set()   # Conjunto para mantener un registro de los nodos visitados3
-        self.search = search
+        self.search = iter(search)
+        self.position = 0
+
         self.generated = None
         self.visited = None
+        self.path = None
         self.path_cost = None
-        self.last_path = None
         self.closed = None
         self.fringe = None
 
-    # Función para actualizar la UI
+        self.history = []  # Historial de estados
+        self.last_path = None
+
     def update_ui(self):
-        try:
-            generated, visited, path_cost, path, closed, fringe = next(self.search)
-            self.last_path = path.copy()
-            print("-------------------------------")
-            print(f"Generated: {generated}")
-            print(f"Visited: {visited}")
-            print(f"Path Cost: {path_cost}")
-            print(f"Path: {path}")
-            print(f"Closed: {closed}")
-            print(f"Fringe: {fringe}")
-            print("-------------------------------")
 
-            # Actualiza la UI con los valores actuales
-            status_label.config(
-                text=f"Generated: {generated}, Visited: {visited}, Path Cost: {path_cost}\n"
-                     f"Visited: {closed}\nFringe: {fringe}"
-            )
-            # Colorea el nodo actualmente visitado
-            if path:
-                current_node = path[0].state
-                self.visited_nodes.add(current_node)  # Agrega el nodo actual a los visitados
-                print("STATE: ", current_node)
+        print("-------------------------------")
+        print(f"Generated: {self.generated}")
+        print(f"Visited: {self.visited}")
+        print(f"Path Cost: {self.path_cost}")
+        print(f"Path: {self.path}")
+        print(f"Closed: {self.closed}")
+        print(f"Fringe: {self.fringe}")
+        print("-------------------------------")
 
-                ax.clear() # Redibuja el grafo para reflejar los nodos visitados
-                # Dibujamos los nodos visibles
-                nx.draw(G, locations, with_labels=True, node_size=1000, node_color='#00A9FF', font_size=10)
+        # Actualiza la UI con los valores actuales
+        status_label.config(
+            text=f"Generated: {self.generated}, Visited: {self.visited}, Path Cost: {self.path_cost}, Step: {self.position}\n"
+                 f"Visited: {self.closed}\nFringe: {self.fringe}"
+        )
+        # Colorea el nodo actualmente visitado
+        if self.path:
+            current_node = self.path[0].state
+            self.visited_nodes.add(current_node)  # Agrega el nodo actual a los visitados
+            print("STATE: ", current_node)
 
-                nx.draw(G, pos, with_labels=True, nodelist=list(n.state for n in fringe), node_size=1100,
-                        node_color='#FFD600', font_size=10)
+            ax.clear()  # Redibuja el grafo para reflejar los nodos visitados
+            # Dibujamos los nodos visibles
+            nx.draw(G, locations, with_labels=True, node_size=1000, node_color='#00A9FF', font_size=10)
 
-                # Dibujamos los nodos visitados
-                nx.draw(G, pos, with_labels=True, nodelist=list(self.visited_nodes), node_size=1000,
-                        node_color='#A9FF00', font_size=10)
+            nx.draw(G, pos, with_labels=True, nodelist=list(n.state for n in self.fringe), node_size=1100,
+                    node_color='#FFD600', font_size=10)
 
-                edge_labels = nx.get_edge_attributes(G, 'weight')
+            # Dibujamos los nodos visitados
+            nx.draw(G, pos, with_labels=True, nodelist=list(self.visited_nodes), node_size=1000,
+                    node_color='#A9FF00', font_size=10)
 
-                nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
-                # Asegúrate de que el nodo actual está en el grafo antes de intentar colorearlo
-                if current_node in pos:
-                    nx.draw_networkx_nodes(G, pos, nodelist=[current_node], node_color='#FF00A9', node_size=700)
-                canvas.draw()
-                fig.canvas.flush_events()
-            # Programa la siguiente actualización
-            root.after(250, self.update_ui)  # 500 milisegundos entre actualizaciones
-        except StopIteration:
-            # status_label.config(text="Search completed.")
-            print("Search completed")
-            # Dibujamos el camino
-            print("LAST: ", self.last_path)
+            edge_labels = nx.get_edge_attributes(G, 'weight')
 
-            final_path_nodes = [node.state for node in self.last_path]
-            nx.draw_networkx_nodes(G, pos, nodelist=final_path_nodes, node_color='black', node_size=1300)
-
-            # Dibujar las etiquetas de los nodos del camino en blanco
-            nx.draw_networkx_labels(G, pos, labels={n: n for n in final_path_nodes}, font_color='white', font_size=10)
-
+            nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
+            # Asegúrate de que el nodo actual está en el grafo antes de intentar colorearlo
+            if current_node in pos:
+                nx.draw_networkx_nodes(G, pos, nodelist=[current_node], node_color='#FF00A9', node_size=700)
             canvas.draw()
+            fig.canvas.flush_events()
+
+
+
+        # Programa la siguiente actualización
+        # root.after(250, self.update_ui)  # 500 milisegundos entre actualizaciones
+
+    def handle_search_completion(self):
+        # status_label.config(text="Search completed.")
+        print("Search completed")
+        # Dibujamos el camino
+        print("LAST: ", self.last_path)
+
+        final_path_nodes = [node.state for node in self.last_path]
+        nx.draw_networkx_nodes(G, pos, nodelist=final_path_nodes, node_color='black', node_size=1300)
+
+        # Dibujar las etiquetas de los nodos del camino en blanco
+        nx.draw_networkx_labels(G, pos, labels={n: n for n in final_path_nodes}, font_color='white', font_size=10)
+
+        canvas.draw()
+
+    def advance_ui(self):
+        try:
+            self.generated, self.visited, self.path_cost, self.path, self.closed, self.fringe = next(self.search)
+            self.position += 1 # Almacenamos la posicion del iterador
+            self.last_path = self.path.copy()
+            self.update_ui()
+        except StopIteration:
+            self.handle_search_completion()
+
+    def reverse_ui(self):
+        print("TODO: not implemented")
+
+    def rebuild_search(self, position):
+        # Reconstruir el iterador de búsqueda desde el principio hasta la posición dada
+        problem = get_selected_problem()
+        new_search = graph_search_generator(problem, FIFOQueue())
+        for _ in range(position):
+            try:
+                next(new_search)
+            except StopIteration:
+                break
+        return new_search
 
 
 def get_selected_problem():
@@ -132,7 +182,8 @@ def on_dfs():
     search = graph_search_generator(get_selected_problem(), Stack())
 
     # Inicia la actualización de la UI
-    UI(search).update_ui()
+    set_global_ui(search)
+    advance_global_ui()
 
 
 def on_bfs():
@@ -142,8 +193,8 @@ def on_bfs():
     search = graph_search_generator(get_selected_problem(), FIFOQueue())
 
     # Inicia la actualización de la UI
-    UI(search).update_ui()
-
+    set_global_ui(search)
+    advance_global_ui()
 
 def on_bab():
     print("Branch and Bound algorithm")
@@ -155,7 +206,8 @@ def on_bab():
     search = graph_search_generator(get_selected_problem(), deque(), sort_by_path_cost)
 
     # Inicia la actualización de la UI
-    UI(search).update_ui()
+    set_global_ui(search)
+    advance_global_ui()
 
 
 def on_bab_s():
@@ -168,8 +220,8 @@ def on_bab_s():
     search = graph_search_generator(get_selected_problem(), deque(), underestimation)
 
     # Inicia la actualización de la UI
-    UI(search).update_ui()
-
+    set_global_ui(search)
+    advance_global_ui()
 
 
 # Crear la ventana principal de Tkinter
@@ -257,10 +309,32 @@ def create_color_legend(row, color, description):
     label = tk.Label(legend_frame, text=description, font=custom_font)
     label.grid(row=row, column=1, sticky='w')
 
+# .............................. AVANCE .................................
+
 # Creamos las entradas de la leyenda con los colores y las descripciones
 create_color_legend(1, '#A9FF00', "Verde = Visitado")
 create_color_legend(2, '#FFD600', "Amarillo = Visible")
 create_color_legend(3, '#00A9FF', "Azul = No Visitado")
 create_color_legend(4, '#FF00A9', "Rojo = Nodo Actual")
+
+# Crear botones para cada algoritmo de búsqueda con diseño personalizado
+button_style2 = { 'fg': 'black', 'font': ('Helvetica', 16, 'bold'),
+                'borderwidth': 0, 'relief': tk.FLAT, 'compound': tk.CENTER,
+                 'image': tk.PhotoImage(file='./ui/right_arrow.png')}
+
+# Crear botones para cada algoritmo de búsqueda con diseño personalizado
+button_style3 = { 'fg': 'black', 'font': ('Helvetica', 16, 'bold'),
+                'borderwidth': 0, 'relief': tk.FLAT, 'compound': tk.CENTER,
+                 'image': tk.PhotoImage(file='./ui/left_arrow.png')}
+
+
+# Crear botón para avanzar en la ejecución paso a paso
+advance_button = tk.Button(right_frame, text="", command=advance_global_ui, **button_style2)
+advance_button.pack(side=tk.RIGHT, pady=10)
+
+# Crear botón para avanzar en la ejecución paso a paso
+#advance_button = tk.Button(right_frame, text="", command=reverse_global_ui, **button_style3)
+#advance_button.pack(side=tk.LEFT, pady=10)
+
 
 root.mainloop()

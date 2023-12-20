@@ -1,6 +1,9 @@
 import unittest
 import search  # Asegúrate de que este módulo esté en tu PATH o proporciona la ruta completa.
-from collections import namedtuple
+from collections import namedtuple, deque
+import time
+
+from utils import FIFOQueue, Stack
 
 # Defining a namedtuple for the search results
 Result = namedtuple('Result', ['generated', 'visited', 'total_cost', 'path'])
@@ -54,6 +57,16 @@ class SearchAlgorithmTests(unittest.TestCase):
             'Mehadia-Fagaras': Result(generated=25, visited=16, total_cost=520, path=['F', 'S', 'R', 'C', 'D', 'M'])
         }
 
+    def __measure_execution_time(self, problem, fringe, sort_function=None):
+        """
+        Función para medir el tiempo de ejecución de un algoritmo de búsqueda.
+        """
+        start_time = time.perf_counter()
+        search.graph_search(problem, fringe, sort_function)
+        end_time = time.perf_counter()
+        execution_time = (end_time - start_time)* 1000  # Convertir a milisegundos
+        return execution_time
+
 
     def __test_with_function(self, search_function=None, expected_results=None, print_enable=False):
         if search_function is None or expected_results is None:
@@ -93,6 +106,22 @@ class SearchAlgorithmTests(unittest.TestCase):
             if print_enable:
                 print("[PATH] Res: ", self.result.path, " | Exp: ", expected_results[route].path)
             self.assertEqual(expected_path, returned_path)
+
+    def test_times(self):
+        print("========================TIEMPOS DE EJECUCIÓN========================")
+        for route in self.routes:
+            # Check the result is not None
+            problem = self.problems[route]
+            time_bfs = self.__measure_execution_time(problem, FIFOQueue())
+            time_dfs = self.__measure_execution_time(problem, Stack())
+            time_bab = self.__measure_execution_time(problem, deque())
+            time_bab_s = self.__measure_execution_time(problem, deque())
+
+            print("--------------", route, "--------------")
+            print("Tiempo BFS:", time_bfs, "ms")
+            print("Tiempo DFS:", time_dfs, "ms")
+            print("Tiempo Branch and Bound:", time_bab, "ms")
+            print("Tiempo Branch and Bound con Subestimación:", time_bab_s, "ms")
 
     def test_breadth_first_search(self):
         self.__test_with_function(search_function=search.breadth_first_graph_search,

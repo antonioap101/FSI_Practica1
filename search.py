@@ -10,6 +10,7 @@ from collections import deque
 from problem import Problem, GPSProblem
 from graph import Graph, UndirectedGraph, RandomGraph
 import random, sys
+import time
 
 romania = UndirectedGraph(Dict(
     A=Dict(Z=75, S=140, T=118),
@@ -92,7 +93,7 @@ def graph_search_generator(problem, fringe, sort_function=None):
             fringe.extend(successors)
             yield generated, visited, node.path_cost, node.path(), closed, fringe
 
-    yield generated, visited,node.path_cost, node.path(), closed, fringe
+    yield generated, visited, node.path_cost, node.path(), closed, fringe
 
 
 def graph_search(problem, fringe, sort_function=None):
@@ -122,6 +123,11 @@ def graph_search(problem, fringe, sort_function=None):
             fringe.extend(successors)
 
     return None
+
+
+
+
+
 
 
 def breadth_first_graph_search(problem) -> Node:
