@@ -531,7 +531,16 @@ class FIFOQueue(Queue):
 
     def __len__(self):
         return len(self.A) - self.start
+    # -------------- Added extra methods --------------
 
+    def __iter__(self):
+        return iter(self.A[self.start:])
+
+
+    def __str__(self):
+        return str(self.A[self.start:])
+
+    # ------------------------------------------------
     def extend(self, items):
         self.A.extend(items)
 

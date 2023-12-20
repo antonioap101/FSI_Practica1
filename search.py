@@ -67,7 +67,7 @@ def graph_search_old(problem, fringe):
     return None
 
 
-def depth_first_graph_search_generator(problem, fringe, sort_function=None):
+def graph_search_generator(problem, fringe, sort_function=None):
     """Search the deepest nodes in the search tree first. [p 74]"""
     closed = set()
     fringe.append(Node(problem.initial))
@@ -92,7 +92,7 @@ def depth_first_graph_search_generator(problem, fringe, sort_function=None):
             fringe.extend(successors)
             yield generated, visited, node.path_cost, node.path(), closed, fringe
 
-    yield generated, visited, 0, None, closed, fringe
+    yield generated, visited,node.path_cost, node.path(), closed, fringe
 
 
 def graph_search(problem, fringe, sort_function=None):

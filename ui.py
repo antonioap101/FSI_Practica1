@@ -1,4 +1,5 @@
 import tkinter as tk
+from collections import deque
 from tkinter import font
 
 import networkx as nx
@@ -6,8 +7,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from problem import GPSProblem
-from search import romania, depth_first_graph_search_generator
-from utils import Stack
+from search import romania, graph_search_generator
+from utils import Stack, FIFOQueue
 
 # Utilizando el objeto 'romania' del código proporcionado
 edges = [(node, neighbour, romania.dict[node][neighbour]) for node in romania.dict for neighbour in romania.dict[node]]
@@ -47,11 +48,18 @@ class UI:
     def __init__(self, search):
         self.visited_nodes = set()   # Conjunto para mantener un registro de los nodos visitados3
         self.search = search
+        self.generated = None
+        self.visited = None
+        self.path_cost = None
+        self.last_path = None
+        self.closed = None
+        self.fringe = None
 
     # Función para actualizar la UI
     def update_ui(self):
         try:
             generated, visited, path_cost, path, closed, fringe = next(self.search)
+            self.last_path = path.copy()
             print("-------------------------------")
             print(f"Generated: {generated}")
             print(f"Visited: {visited}")
@@ -64,7 +72,7 @@ class UI:
             # Actualiza la UI con los valores actuales
             status_label.config(
                 text=f"Generated: {generated}, Visited: {visited}, Path Cost: {path_cost}\n"
-                     f"Closed: {closed}\nFringe: {fringe}"
+                     f"Visited: {closed}\nFringe: {fringe}"
             )
             # Colorea el nodo actualmente visitado
             if path:
@@ -72,9 +80,19 @@ class UI:
                 self.visited_nodes.add(current_node)  # Agrega el nodo actual a los visitados
                 print("STATE: ", current_node)
 
-                #ax.clear() # Redibuja el grafo para reflejar los nodos visitados
-                nx.draw(G, pos, with_labels=True, nodelist=list(self.visited_nodes), node_size=1000, node_color='#A9FF00', font_size=10)
+                ax.clear() # Redibuja el grafo para reflejar los nodos visitados
+                # Dibujamos los nodos visibles
+                nx.draw(G, locations, with_labels=True, node_size=1000, node_color='#00A9FF', font_size=10)
+
+                nx.draw(G, pos, with_labels=True, nodelist=list(n.state for n in fringe), node_size=1100,
+                        node_color='#FFD600', font_size=10)
+
+                # Dibujamos los nodos visitados
+                nx.draw(G, pos, with_labels=True, nodelist=list(self.visited_nodes), node_size=1000,
+                        node_color='#A9FF00', font_size=10)
+
                 edge_labels = nx.get_edge_attributes(G, 'weight')
+
                 nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
                 # Asegúrate de que el nodo actual está en el grafo antes de intentar colorearlo
                 if current_node in pos:
@@ -82,10 +100,21 @@ class UI:
                 canvas.draw()
                 fig.canvas.flush_events()
             # Programa la siguiente actualización
-            root.after(1000, self.update_ui)  # 500 milisegundos entre actualizaciones
+            root.after(250, self.update_ui)  # 500 milisegundos entre actualizaciones
         except StopIteration:
             # status_label.config(text="Search completed.")
             print("Search completed")
+            # Dibujamos el camino
+            print("LAST: ", self.last_path)
+
+            final_path_nodes = [node.state for node in self.last_path]
+            nx.draw_networkx_nodes(G, pos, nodelist=final_path_nodes, node_color='black', node_size=1300)
+
+            # Dibujar las etiquetas de los nodos del camino en blanco
+            nx.draw_networkx_labels(G, pos, labels={n: n for n in final_path_nodes}, font_color='white', font_size=10)
+
+            canvas.draw()
+
 
 
 # Aquí debes definir las funciones que se llamarán cuando se presionen los botones
@@ -96,24 +125,59 @@ def on_dfs():
     problem = GPSProblem('A', 'B', romania)  # Usamos las claves tal como están definidas en el grafo
 
     # Creamos el generador
-    search = depth_first_graph_search_generator(problem, Stack())
-
-    myUI = UI(search)
+    search = graph_search_generator(problem, Stack())
 
     # Inicia la actualización de la UI
-    myUI.update_ui()
+    UI(search).update_ui()
 
 
 def on_bfs():
-    print("BFS algorithm")  # Aquí debe ir la lógica para DFS
+    print("BFS algorithm")
+
+    # Obtenemos el problema de GPS que deseamos resolver
+    problem = GPSProblem('A', 'B', romania)  # Usamos las claves tal como están definidas en el grafo
+
+    # Creamos el generador
+    search = graph_search_generator(problem, FIFOQueue())
+
+    # Inicia la actualización de la UI
+    UI(search).update_ui()
 
 
 def on_bab():
-    print("Branch and Bound algorithm")  # Aquí debe ir la lógica para BAB
+    print("Branch and Bound algorithm")
+
+    # Obtenemos el problema de GPS que deseamos resolver
+    problem = GPSProblem('A', 'B', romania)  # Usamos las claves tal como están definidas en el grafo
+
+    def sort_by_path_cost(node, problem):
+        return node.path_cost
+
+    # Creamos el generador
+    search = graph_search_generator(problem, deque(), sort_by_path_cost)
+
+    # Inicia la actualización de la UI
+    UI(search).update_ui()
 
 
 def on_bab_s():
-    print("Branch and Bound with Underestimation algorithm")  # Aquí debe ir la lógica para BAB con subestimación
+    print("Branch and Bound with Underestimation algorithm")
+
+    # Obtenemos el problema de GPS que deseamos resolver
+    problem = GPSProblem('A', 'B', romania)  # Usamos las claves tal como están definidas en el grafo
+
+    def underestimation(node, problem):
+        return node.path_cost + problem.h(node)
+
+    # Creamos el generador
+    search = graph_search_generator(problem, deque(), underestimation)
+
+    # Creamos el generador
+    search = graph_search_generator(problem, Stack())
+
+    # Inicia la actualización de la UI
+    UI(search).update_ui()
+
 
 
 # Crear la ventana principal de Tkinter
@@ -158,12 +222,35 @@ custom_font = font.Font(family='Helvetica', size=14, weight='bold')
 status_label = tk.Label(graph_frame, text="", justify=tk.LEFT, font=custom_font)
 status_label.pack(side=tk.BOTTOM, anchor='sw')
 
+
+# =========================LEYENDA ============================
+# Creamos un frame para contener los círculos de colores y sus descripciones
+legend_frame = tk.Frame(buttons_frame)
+legend_frame.pack(side=tk.TOP, anchor='se', padx=10, pady=10)
+
+# Creamos una etiqueta para mostrar la leyenda de colores
+legend_label = tk.Label(legend_frame,
+                        text="Leyenda de Colores:",
+                        font=custom_font)
+legend_label.grid(row=0, column=0, sticky='w', columnspan=2)
+
+# Función para crear un círculo de color y su etiqueta en la leyenda
+def create_color_legend(row, color, description):
+    canvas = tk.Canvas(legend_frame, width=20, height=20)
+    canvas.grid(row=row, column=0)
+    canvas.create_oval(5, 5, 20, 20, fill=color, outline=color)
+    label = tk.Label(legend_frame, text=description, font=custom_font)
+    label.grid(row=row, column=1, sticky='w')
+
+# Creamos las entradas de la leyenda con los colores y las descripciones
+create_color_legend(1, '#A9FF00', "Verde = Visitado")
+create_color_legend(2, '#FFD600', "Amarillo = Visible")
+create_color_legend(3, '#00A9FF', "Azul = No Visitado")
+create_color_legend(4, '#FF00A9', "Rojo = Nodo Actual")
+
 bfs_button.pack(side=tk.TOP, pady=10)
 dfs_button.pack(side=tk.TOP, pady=10)
 bab_button.pack(side=tk.TOP, pady=10)
 bab_s_button.pack(side=tk.TOP, pady=10)
-
-
-
 
 root.mainloop()
