@@ -10,7 +10,6 @@ from ui.graph_data import GraphData
 
 from ui.graph_visualizer import GraphVisualizer
 
-
 class GUI:
     def __init__(self):
         # Set class variables
@@ -37,9 +36,9 @@ class GUI:
 
     def __load_assets(self):
         self.custom_font = font.Font(family='Helvetica', size=14, weight='bold')
-        self.button_design_image = tk.PhotoImage(file='../assets/button_design.png')
-        self.right_arrow_image = tk.PhotoImage(file='../assets/right_arrow.png')
-        self.left_arrow_image = tk.PhotoImage(file='../assets/left_arrow.png')
+        self.button_design_image = tk.PhotoImage(file='assets/button_design.png')
+        self.right_arrow_image = tk.PhotoImage(file='assets/right_arrow.png')
+        self.left_arrow_image = tk.PhotoImage(file='assets/left_arrow.png')
 
     def __setup_graph_frame(self):
         self.graph_frame = tk.Frame(self.root)
@@ -211,7 +210,3 @@ class GUI:
         self.graph_visualizer = GraphVisualizer(self.graph_data.algorithm, self.graph_data)
         self.__advance_ui()
 
-
-if __name__ == "__main__":
-    print("--------Start--------")
-    GUI().run()

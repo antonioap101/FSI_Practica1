@@ -5,9 +5,9 @@ from core.search import romania, BidirectionalIterator
 
 
 class GraphVisualizer:
-    def __init__(self, search, global_data):
+    def __init__(self, search, graph_data):
         self.search = BidirectionalIterator(search)     # Iterator for the search algorithm
-        self.global_data = global_data                  # Global data shared among the GUI and visualizer
+        self.graph_data = graph_data                  # Global data shared among the GUI and visualizer
         self.position = 0                               # Current position or step in the visualization
         self.last_path = None                           # Stores the last path for comparison
 

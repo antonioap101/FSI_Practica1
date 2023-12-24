@@ -39,33 +39,7 @@ australia = UndirectedGraph(Dict(
 australia.locations = Dict(WA=(120, 24), NT=(135, 20), SA=(135, 30),
                            Q=(145, 20), NSW=(145, 32), T=(145, 42), V=(145, 37))
 
-# ______________________________________________________________________________
-## Uninformed Search algorithms
-
-def graph_search_old(problem, fringe):
-    """Search through the successors of a problem to find a goal.
-    The argument fringe should be an empty queue.
-    If two paths reach a state, only use the best one. [Fig. 3.18]"""
-    closed = set()
-    fringe.append(Node(problem.initial))
-    generated = 1  # Counter for generated nodes (starts in 1)
-    visited = 0    # Counter for visited nodes
-
-    while fringe:
-        node = fringe.pop()
-        visited += 1
-        if problem.goal_test(node.state):
-            return generated, visited, node.path_cost, node.path()
-
-        if node.state not in closed:
-            closed.add(node.state)
-            successors = node.expand(problem)
-            generated += len(successors)
-            fringe.extend(successors)
-
-    return None
-
-
+# ________________________SEARCH ALGORITHMS_________________________________
 def graph_search_generator(problem, fringe, sort_function=None):
     """Search the deepest nodes in the search tree first. [p 74]"""
     closed = set()
@@ -102,7 +76,7 @@ def graph_search(problem, fringe, sort_function=None):
     visited = 0    # Counter for visited nodes
 
     while fringe:
-        # Ordenar la cola en cada iteración si se proporciona una función de ordenación
+        # Sort the fringe on each iteration if a sorting function is provided
         if sort_function:
             fringe = deque(sorted(list(fringe), key=lambda n: sort_function(n, problem)))
             node = fringe.popleft()
