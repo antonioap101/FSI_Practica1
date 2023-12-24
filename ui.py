@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from problem import GPSProblem
-from search import romania, graph_search_generator
+from search import romania, graph_search_generator, BidirectionalIterator
 from utils import Stack, FIFOQueue
 
 # Utilizando el objeto 'romania' del código proporcionado
@@ -30,14 +30,12 @@ def set_global_ui(search):
 
 def advance_global_ui():
     if global_ui:
-        print("RIGHT ARROW CLICK")
         global_ui.advance_ui()
     else:
         raise Exception("Global UI not set")
 
 def reverse_global_ui():
     if global_ui:
-        print("LEFT ARROW CLICK")
         global_ui.reverse_ui()
     else:
         raise Exception("Global UI not set")
@@ -68,9 +66,9 @@ def draw_fixed_graph():
 
 class UI:
     def __init__(self, search):
-        self.visited_nodes = set()   # Conjunto para mantener un registro de los nodos visitados3
-        self.search = iter(search)
+        self.search = BidirectionalIterator(search)
         self.position = 0
+        self.last_path = None
 
         self.generated = None
         self.visited = None
@@ -79,20 +77,9 @@ class UI:
         self.closed = None
         self.fringe = None
 
-        self.history = []  # Historial de estados
-        self.last_path = None
-
     def update_ui(self):
-
-        print("-------------------------------")
-        print(f"Generated: {self.generated}")
-        print(f"Visited: {self.visited}")
-        print(f"Path Cost: {self.path_cost}")
-        print(f"Path: {self.path}")
-        print(f"Closed: {self.closed}")
-        print(f"Fringe: {self.fringe}")
-        print("-------------------------------")
-
+        # Imprime por pantalla el estado actual de los elementos
+        # self.print_status()
         # Actualiza la UI con los valores actuales
         status_label.config(
             text=f"Generated: {self.generated}, Visited: {self.visited}, Path Cost: {self.path_cost}, Step: {self.position}\n"
@@ -100,9 +87,7 @@ class UI:
         )
         # Colorea el nodo actualmente visitado
         if self.path:
-            current_node = self.path[0].state
-            self.visited_nodes.add(current_node)  # Agrega el nodo actual a los visitados
-            print("STATE: ", current_node)
+            current_node = self.path[0].state # Agrega el nodo actual a los visitados
 
             ax.clear()  # Redibuja el grafo para reflejar los nodos visitados
             # Dibujamos los nodos visibles
@@ -112,7 +97,7 @@ class UI:
                     node_color='#FFD600', font_size=10)
 
             # Dibujamos los nodos visitados
-            nx.draw(G, pos, with_labels=True, nodelist=list(self.visited_nodes), node_size=1000,
+            nx.draw(G, pos, with_labels=True, nodelist=list(self.closed), node_size=1000,
                     node_color='#A9FF00', font_size=10)
 
             edge_labels = nx.get_edge_attributes(G, 'weight')
@@ -123,9 +108,6 @@ class UI:
                 nx.draw_networkx_nodes(G, pos, nodelist=[current_node], node_color='#FF00A9', node_size=700)
             canvas.draw()
             fig.canvas.flush_events()
-
-
-
         # Programa la siguiente actualización
         # root.after(250, self.update_ui)  # 500 milisegundos entre actualizaciones
 
@@ -145,7 +127,7 @@ class UI:
 
     def advance_ui(self):
         try:
-            self.generated, self.visited, self.path_cost, self.path, self.closed, self.fringe = next(self.search)
+            self.generated, self.visited, self.path_cost, self.path, self.closed, self.fringe = self.search.next()
             self.position += 1 # Almacenamos la posicion del iterador
             self.last_path = self.path.copy()
             self.update_ui()
@@ -153,18 +135,25 @@ class UI:
             self.handle_search_completion()
 
     def reverse_ui(self):
-        print("TODO: not implemented")
+        try:
+            self.generated, self.visited, self.path_cost, self.path, self.closed, self.fringe = self.search.prev()
+            self.position -= 1  # Almacenamos la posicion del iterador
+            self.last_path = self.path.copy()
+            self.update_ui()
+        except IndexError:
+            pass
 
-    def rebuild_search(self, position):
-        # Reconstruir el iterador de búsqueda desde el principio hasta la posición dada
-        problem = get_selected_problem()
-        new_search = graph_search_generator(problem, FIFOQueue())
-        for _ in range(position):
-            try:
-                next(new_search)
-            except StopIteration:
-                break
-        return new_search
+
+    def print_status(self):
+        print("-------------------------------")
+        print(f"Generated: {self.generated}")
+        print(f"Visited: {self.visited}")
+        print(f"Path Cost: {self.path_cost}")
+        print(f"Path: {self.path}")
+        print(f"Closed: {self.closed}")
+        print(f"Fringe: {self.fringe}")
+        print(f"STATE:  {self.path[0].state}")
+        print("-------------------------------")
 
 
 def get_selected_problem():
@@ -333,8 +322,10 @@ advance_button = tk.Button(right_frame, text="", command=advance_global_ui, **bu
 advance_button.pack(side=tk.RIGHT, pady=10)
 
 # Crear botón para avanzar en la ejecución paso a paso
-#advance_button = tk.Button(right_frame, text="", command=reverse_global_ui, **button_style3)
-#advance_button.pack(side=tk.LEFT, pady=10)
+reverse_button = tk.Button(right_frame, text="", command=reverse_global_ui, **button_style3)
+reverse_button.pack(side=tk.LEFT, pady=10)
 
-
+# Configura un manejador de eventos para el cierre de la ventana
+root.protocol("WM_DELETE_WINDOW", root.quit())
 root.mainloop()
+

@@ -3,6 +3,7 @@
 The way to use this code is to subclass Problem to create a class of problems,
 then create problem instances and solve them with calls to the various search
 functions."""
+import copy
 
 from node import Node
 from utils import *
@@ -126,10 +127,6 @@ def graph_search(problem, fringe, sort_function=None):
 
 
 
-
-
-
-
 def breadth_first_graph_search(problem) -> Node:
     """Search the shallowest nodes in the search tree first. [p 74]"""
     return graph_search(problem, FIFOQueue())  # FIFOQueue -> fringe
@@ -160,3 +157,45 @@ def branch_and_bound_underestimation(problem) -> Node:
 # The remainder of this file implements examples for the search algorithms.
 
 
+class BidirectionalIterator:
+    def __init__(self, generator):
+        self.generator = generator
+        self.history = []
+        self.index = -1
+
+    def next(self):
+        if self.index < len(self.history) - 1:
+            self.index += 1
+            return self.history[self.index]
+        else:
+            try:
+                next_item = next(self.generator)
+                # Hacer una copia profunda de los elementos mutables
+                next_item_copy = self._deep_copy_item(next_item)
+                self.history.append(next_item_copy)
+                self.index += 1
+                return next_item_copy
+            except StopIteration:
+                raise StopIteration("No more items in generator")
+
+    def prev(self):
+        if self.index > 0:
+            self.index -= 1
+            return self.history[self.index]
+        else:
+            raise IndexError("Already at the first item")
+
+    def _deep_copy_item(self, item):
+        generated, visited, path_cost, path, closed, fringe = item
+        closed_copy = copy.deepcopy(closed)
+        fringe_copy = copy.deepcopy(fringe)
+        return generated, visited, path_cost, path, closed_copy, fringe_copy
+
+    def printi(self, elem):
+        g, v, pc, p, c, f = elem
+        print(f"Generated: {g}")
+        print(f"Visited: {v}")
+        print(f"Path Cost: {pc}")
+        print(f"Path: {p}")
+        print(f"Closed: {c}")
+        print(f"Fringe: {f}")
