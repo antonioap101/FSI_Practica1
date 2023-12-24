@@ -4,13 +4,11 @@ The way to use this code is to subclass Problem to create a class of problems,
 then create problem instances and solve them with calls to the various search
 functions."""
 
-from node import Node
-from utils import *
+from core.node import Node
+from core.utils import *
 from collections import deque
-from problem import Problem, GPSProblem
-from graph import Graph, UndirectedGraph, RandomGraph
-import random, sys
-import time
+from core.problem import Problem
+from core.graph import Graph, UndirectedGraph
 
 romania = UndirectedGraph(Dict(
     A=Dict(Z=75, S=140, T=118),
@@ -155,8 +153,6 @@ def branch_and_bound_underestimation(problem) -> Node:
 # The remainder of this file implements examples for the search algorithms.
 
 
-from utils import *
-
 class Problem:
     """The abstract class for a formal problem.  You should subclass this and
     implement the method successor, and possibly __init__, goal_test, and
@@ -219,8 +215,6 @@ class GPSProblem(Problem):
         else:
             return infinity
 
-from utils import *
-
 
 class Node:
     """A node in a search tree. Contains a pointer to the parent (the node
@@ -268,7 +262,7 @@ class Node:
 # ______________________________________________________________________________
 # Graphs and Graph Problems
 
-from utils import *
+from core.utils import *
 import random
 
 

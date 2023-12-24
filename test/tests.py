@@ -1,9 +1,9 @@
 import unittest
-import search  # Asegúrate de que este módulo esté en tu PATH o proporciona la ruta completa.
+from core import search, problem
 from collections import namedtuple, deque
 import time
 
-from utils import FIFOQueue, Stack
+from core.utils import FIFOQueue, Stack
 
 # Defining a namedtuple for the search results
 Result = namedtuple('Result', ['generated', 'visited', 'total_cost', 'path'])
@@ -14,11 +14,11 @@ class SearchAlgorithmTests(unittest.TestCase):
         cls.routes = ['Arad-Bucharest', 'Oradea-Eforie', 'Giurgiu-Zeriod','Neamt-Dobreta', 'Mehadia-Fagaras']
 
         cls.problems = {
-            'Arad-Bucharest': search.GPSProblem('A', 'B', search.romania),
-            'Oradea-Eforie': search.GPSProblem('O', 'E', search.romania),
-            'Giurgiu-Zeriod': search.GPSProblem('G', 'Z', search.romania),
-            'Neamt-Dobreta': search.GPSProblem('N', 'D', search.romania),
-            'Mehadia-Fagaras': search.GPSProblem('M', 'F', search.romania)
+            'Arad-Bucharest': problem.GPSProblem('A', 'B', search.romania),
+            'Oradea-Eforie': problem.GPSProblem('O', 'E', search.romania),
+            'Giurgiu-Zeriod': problem.GPSProblem('G', 'Z', search.romania),
+            'Neamt-Dobreta': problem.GPSProblem('N', 'D', search.romania),
+            'Mehadia-Fagaras': problem.GPSProblem('M', 'F', search.romania)
         }
 
         # Results for Breadth-First Search (DFS)

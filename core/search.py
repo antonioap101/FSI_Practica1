@@ -5,13 +5,10 @@ then create problem instances and solve them with calls to the various search
 functions."""
 import copy
 
-from node import Node
-from utils import *
+from core.node import Node
+from core.utils import *
 from collections import deque
-from problem import Problem, GPSProblem
-from graph import Graph, UndirectedGraph, RandomGraph
-import random, sys
-import time
+from core.graph import Graph, UndirectedGraph, RandomGraph
 
 romania = UndirectedGraph(Dict(
     A=Dict(Z=75, S=140, T=118),

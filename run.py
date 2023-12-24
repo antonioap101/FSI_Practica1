@@ -1,9 +1,8 @@
 # Search methods
 
-import search
-from project_stub import *
+from core import search
 
-from node import Node
+from core.node import Node
 
 ab = search.GPSProblem('A', 'B', search.romania)
 

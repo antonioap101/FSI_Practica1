@@ -1,7 +1,7 @@
 # ______________________________________________________________________________
 # Graphs and Graph Problems
 
-from utils import *
+from core.utils import *
 import random
 
 
