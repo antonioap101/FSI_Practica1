@@ -39,34 +39,6 @@ australia = UndirectedGraph(Dict(
 australia.locations = Dict(WA=(120, 24), NT=(135, 20), SA=(135, 30),
                            Q=(145, 20), NSW=(145, 32), T=(145, 42), V=(145, 37))
 
-# ________________________SEARCH ALGORITHMS_________________________________
-def graph_search_generator(problem, fringe, sort_function=None):
-    """Search the deepest nodes in the search tree first. [p 74]"""
-    closed = set()
-    fringe.append(Node(problem.initial))
-    generated = 1  # Counter for generated nodes (starts in 1)
-    visited = 0    # Counter for visited nodes
-
-    while fringe:
-        if sort_function:
-            fringe = deque(sorted(list(fringe), key=lambda n: sort_function(n, problem)))
-            node = fringe.popleft()
-        else:
-            node = fringe.pop()
-
-        visited += 1
-        if problem.goal_test(node.state):
-            yield generated, visited, node.path_cost, node.path(), closed, fringe
-            return
-        if node.state not in closed:
-            closed.add(node.state)
-            successors = node.expand(problem)
-            generated += len(successors)
-            fringe.extend(successors)
-            yield generated, visited, node.path_cost, node.path(), closed, fringe
-
-    yield generated, visited, node.path_cost, node.path(), closed, fringe
-
 
 def graph_search(problem, fringe, sort_function=None):
     """Search through the successors of a problem to find a goal."""
@@ -97,6 +69,35 @@ def graph_search(problem, fringe, sort_function=None):
     return None
 
 
+def graph_search_generator(problem, fringe, sort_function=None):
+    """Generator version of the graph_search function for the UI"""
+    closed = set()
+    fringe.append(Node(problem.initial))
+    generated = 1  # Counter for generated nodes (starts in 1)
+    visited = 0    # Counter for visited nodes
+
+    while fringe:
+        if sort_function:
+            fringe = deque(sorted(list(fringe), key=lambda n: sort_function(n, problem)))
+            node = fringe.popleft()
+        else:
+            node = fringe.pop()
+
+        visited += 1
+        if problem.goal_test(node.state):
+            yield generated, visited, node.path_cost, node.path(), closed, fringe
+            return
+        if node.state not in closed:
+            closed.add(node.state)
+            successors = node.expand(problem)
+            generated += len(successors)
+            fringe.extend(successors)
+            yield generated, visited, node.path_cost, node.path(), closed, fringe
+
+    yield generated, visited, node.path_cost, node.path(), closed, fringe
+
+# ________________________SEARCH ALGORITHMS_________________________________
+
 
 def breadth_first_graph_search(problem) -> Node:
     """Search the shallowest nodes in the search tree first. [p 74]"""
@@ -124,11 +125,10 @@ def branch_and_bound_underestimation(problem) -> Node:
     # return bab_underestimation(problem, deque())
     return graph_search(problem, deque(), underestimation)
 
-# _____________________________________________________________________________
-# The remainder of this file implements examples for the search algorithms.
 
 
 class BidirectionalIterator:
+    """ Bidirectional Iterator that allows the UI to go forward and backwards in search process """
     def __init__(self, generator):
         self.generator = generator
         self.history = []
