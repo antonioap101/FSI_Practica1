@@ -43,6 +43,17 @@ To run the visualizer, ensure you have the necessary dependencies installed, and
 python run.py
 ```
 
+## Implemented Tests
+To verify the correct functioning of the implemented algorithms, the following tests have been developed and checked:
+
+| ID | Origin  | Destination | Breadth-First Search | Depth-First Search | Branch and Bound | Branch and Bound with Underestimation |
+|----|---------|-------------|----------------------|--------------------|------------------|--------------------------------------|
+| 1  | Arad    | Bucharest   | Generated: 21<br>Visited: 16<br>Cost: 450<br>Path: B, F, S, A | Generated: 18<br>Visited: 10<br>Cost: 733<br>Path: B, P, C, D, M, L, T, A | Generated: 31<br>Visited: 24<br>Cost: 418<br>Path: B, P, R, S, A | Generated: 16<br>Visited: 6<br>Cost: 418<br>Path: B, P, R, S, A |
+| 2  | Oradea  | Eforie      | Generated: 45<br>Visited: 43<br>Cost: 730<br>Path: E, H, U, B, F, S, O | Generated: 41<br>Visited: 31<br>Cost: 698<br>Path: E, H, U, B, P, R, S, O | Generated: 43<br>Visited: 40<br>Cost: 698<br>Path: E, H, U, B, P, R, S, O | Generated: 32<br>Visited: 15<br>Cost: 698<br>Path: E, H, U, B, P, R, S, O |
+| 3  | Giurgiu | Zerind      | Generated: 41<br>Visited: 34<br>Cost: 615<br>Path: Z, A, S, F, B, G | Generated: 32<br>Visited: 21<br>Cost: 1284<br>Path: Z, A, T, L, M, D, C, P, R, S, F, B, G | Generated: 41<br>Visited: 35<br>Cost: 583<br>Path: Z, A, S, R, P, B, G | Generated: 26<br>Visited: 12<br>Cost: 583<br>Path: Z, A, S, R, P, B, G |
+| 4  | Neamt   | Drobeta     | Generated: 32<br>Visited: 26<br>Cost: 765<br>Path: D, C, P, B, U, V, I, N | Generated: 31<br>Visited: 19<br>Cost: 1151<br>Path: D, C, P, R, S, F, B, U, V, I, N | Generated: 32<br>Visited: 26<br>Cost: 765<br>Path: D, C, P, B, U, V, I, N | Generated: 23<br>Visited: 12<br>Cost: 765<br>Path: D, C, P, B, U, V, I, N |
+| 5  | Mehadia | Fagaras     | Generated: 31<br>Visited: 23<br>Cost: 520<br>Path: F, S, R, C, D, M | Generated: 29<br>Visited: 18<br>Cost: 928<br>Path: F, B, P, R, S, A, T, L, M | Generated: 36<br>Visited: 27<br>Cost: 520<br>Path: F, S, R, C, D, M | Generated: 25<br>Visited: 16<br>Cost: 520<br>Path: F, S, R, C, D, M |
+
 ## Dependencies
 
 This project relies on several Python libraries, including Tkinter for the user interface and NetworkX for graph manipulation. Ensure these libraries are installed before running the project. The project was developed using Python version 3.9.18. You can install the dependencies with the following commands:
