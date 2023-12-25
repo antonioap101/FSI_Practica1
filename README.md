@@ -43,6 +43,11 @@ To run the visualizer, ensure you have the necessary dependencies installed, and
 python run.py
 ```
 
+## Developed UI
+To provide a more user-friendly experience for visualizing the evolution of each algorithm, we have developed a simple yet effective user interface. This interface enables users to select a route for visualization and choose one of the four implemented algorithms for exploration. It allows for step-by-step navigation in both forward and backward directions, along with the visualization of the values associated with the relevant variables throughout the search process.
+
+![UI_PHOTO1](./assets/ui_photo1.jpg)
+
 ## Implemented Tests
 To verify the correct functioning of the implemented algorithms, the following tests have been developed and checked:
 
