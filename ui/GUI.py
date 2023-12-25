@@ -159,7 +159,7 @@ class GUI:
             # Updates te bottom label with current values
             self.status_label.config(
                 text=f"Generated: {generated}, Visited: {visited}, Path Cost: {path_cost}, Step: {position}\n"
-                     f"Visited: {closed}\nFringe: {fringe}",
+                     f"Visited: {closed}\nFringe: {fringe}\nPath: {list(reversed(path))}",
                 font=self.custom_font,
                 fg="black"
             )

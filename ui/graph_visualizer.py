@@ -89,7 +89,7 @@ class GraphVisualizer:
         # status_label.config(text="Search completed.")
         print("Search completed")
         # Dibujamos el camino
-        print("LAST: ", self.last_path)
+        print("Final path: ", self.last_path)
 
         final_path_nodes = [node.state for node in self.last_path]
         nx.draw_networkx_nodes(self.graph_data.G, self.graph_data.pos, nodelist=final_path_nodes, node_color='black', node_size=1300)
@@ -97,11 +97,10 @@ class GraphVisualizer:
         # Dibujar las etiquetas de los nodos del camino en blanco
         nx.draw_networkx_labels(self.graph_data.G, self.graph_data.pos, labels={n: n for n in final_path_nodes}, font_color='white', font_size=10)
 
-
     def advance_graph(self):
         try:
             self.generated, self.visited, self.path_cost, self.path, self.closed, self.fringe = self.search.next()
-            self.position += 1 # Almacenamos la posicion del iterador
+            self.position += 1 # Save current iteration
             self.last_path = self.path.copy()
             self.update_graph()
         except StopIteration:
