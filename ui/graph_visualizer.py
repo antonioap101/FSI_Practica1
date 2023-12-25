@@ -33,13 +33,26 @@ class GraphVisualizer:
         # Usamos las posiciones originales sin la conversión de las claves
         self.graph_data.pos = {node: (x, y) for node, (x, y) in zip(romania.locations.keys(), romania.locations.values())}
 
-        nx.draw(self.graph_data.G, self.graph_data.pos, with_labels=True, node_size=1000, node_color='#00A9FF', font_size=10)
+        # Once all properties are set, we draw the graph
+        self.draw_original_graph()
 
-        # Dibujar las etiquetas de los pesos en las aristas
+    def draw_original_graph(self):
+        """Draws the whole graph with all its nodes in blue."""
+        self.graph_data.ax.clear()  # Limpia el gráfico actual
+
+        # Redibuja el gráfico con todos los nodos en azul
+        nx.draw(self.graph_data.G, self.graph_data.pos, with_labels=True,
+                node_size=1000, node_color='#00A9FF', font_size=10)
+
+        # Dibuja las etiquetas de los pesos en las aristas
         edge_labels = nx.get_edge_attributes(self.graph_data.G, 'weight')
-        nx.draw_networkx_edge_labels(self.graph_data.G, self.graph_data.pos, edge_labels=edge_labels, font_size=8)
-
+        nx.draw_networkx_edge_labels(self.graph_data.G, self.graph_data.pos,
+                                     edge_labels=edge_labels, font_size=8)
         plt.axis('off')
+
+        # Actualiza la figura y el gráfico
+        self.graph_data.fig.canvas.draw()
+        self.graph_data.fig.canvas.flush_events()
 
     def update_graph(self):
         # Imprime por pantalla el estado actual de los elementos
