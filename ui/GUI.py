@@ -31,7 +31,7 @@ class GUI:
 
     def run(self):
         # Configura un manejador de eventos para el cierre de la ventana
-        self.root.protocol("WM_DELETE_WINDOW", self.root.quit())
+        self.root.protocol("WM_DELETE_WINDOW", self.root.quit)
         self.root.mainloop()
 
     def __load_assets(self):
