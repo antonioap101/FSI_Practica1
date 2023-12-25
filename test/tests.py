@@ -108,7 +108,7 @@ class SearchAlgorithmTests(unittest.TestCase):
             self.assertEqual(expected_path, returned_path)
 
     def test_times(self):
-        print("========================TIEMPOS DE EJECUCIÓN========================")
+        print("\n========================TIEMPOS DE EJECUCIÓN========================")
         for route in self.routes:
             # Check the result is not None
             problem = self.problems[route]
