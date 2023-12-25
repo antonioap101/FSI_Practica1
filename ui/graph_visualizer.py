@@ -22,15 +22,15 @@ class GraphVisualizer:
         """ Method to draw the graph with fixed position for its nodes """
         self.graph_data.G = nx.Graph()
 
-        # Usamos las claves originales para los nodos, sin usar node_labels para convertirlos
+        # Iterate through the nodes and their neighbors in the Romania graph
         for node, neighbours in romania.dict.items():
             for neighbour, distance in neighbours.items():
-                self.graph_data.G.add_edge(node, neighbour, weight=distance)
+                self.graph_data.G.add_edge(node, neighbour, weight=distance) # Add an edge to the graph with the node, neighbor, and edge weight
 
-        # Dibujar el grafo
+        # Create a figure and axis for the graph with a specified size of (12, 8)
         self.graph_data.fig, self.graph_data.ax = plt.subplots(figsize=(12, 8))
 
-        # Usamos las posiciones originales sin la conversión de las claves
+        # We use the original position of the graphs nodes to draw it
         self.graph_data.pos = {node: (x, y) for node, (x, y) in zip(romania.locations.keys(), romania.locations.values())}
 
         # Once all properties are set, we draw the graph
@@ -40,67 +40,68 @@ class GraphVisualizer:
         """Draws the whole graph with all its nodes in blue."""
         self.graph_data.ax.clear()  # Limpia el gráfico actual
 
-        # Redibuja el gráfico con todos los nodos en azul
+        # Draw the graph nodes
         nx.draw(self.graph_data.G, self.graph_data.pos, with_labels=True,
                 node_size=1000, node_color='#00A9FF', font_size=10)
 
-        # Dibuja las etiquetas de los pesos en las aristas
+        # Draw the graph labels
         edge_labels = nx.get_edge_attributes(self.graph_data.G, 'weight')
         nx.draw_networkx_edge_labels(self.graph_data.G, self.graph_data.pos,
                                      edge_labels=edge_labels, font_size=8)
-
         plt.axis('off')
 
-        # Actualiza la figura y el gráfico
+        # Update figure and graph
         self.graph_data.fig.canvas.draw()
         self.graph_data.fig.canvas.flush_events()
 
     def update_graph(self):
-        # Imprime por pantalla el estado actual de los elementos
+        # Prints the current status of every element
         # self.print_status()
 
-        # Colorea el nodo actualmente visitado
+        # Colors each visited and visible node
         if self.path:
             current_node = self.path[0].state # Agrega el nodo actual a los visitados
 
-            self.graph_data.ax.clear()  # Redibuja el grafo para reflejar los nodos visitados
-            # Dibujamos los nodos visibles
+            self.graph_data.ax.clear()  # Clears drawing status to update it
+
+            # Draw non-changed nodes
             nx.draw(self.graph_data.G, self.graph_data.pos , with_labels=True, node_size=1000, node_color='#00A9FF', font_size=10)
 
+            # Paint visible nodes
             nx.draw(self.graph_data.G, self.graph_data.pos, with_labels=True, nodelist=list(n.state for n in self.fringe), node_size=1100,
                     node_color='#FFD600', font_size=10)
 
-            # Dibujamos los nodos visitados
+            # Paint visited nodes
             nx.draw(self.graph_data.G, self.graph_data.pos, with_labels=True, nodelist=list(self.closed), node_size=1000,
                     node_color='#A9FF00', font_size=10)
 
             edge_labels = nx.get_edge_attributes(self.graph_data.G, 'weight')
 
             nx.draw_networkx_edge_labels(self.graph_data.G, self.graph_data.pos, edge_labels=edge_labels, font_size=8)
-            # Asegúrate de que el nodo actual está en el grafo antes de intentar colorearlo
+
+            # We check that the current node has assigned coordinates in the graph
             if current_node in self.graph_data.pos:
                 nx.draw_networkx_nodes(self.graph_data.G, self.graph_data.pos, nodelist=[current_node], node_color='#FF00A9', node_size=700)
 
             self.graph_data.fig.canvas.flush_events()
-        # Programa la siguiente actualización
-        # root.after(250, self.update_graph)  # 500 milisegundos entre actualizaciones
+        # You could program the next update in a specific time-lapse, the update in this case is manual with forward-backward buttons
+        # root.after(250, self.update_graph)  # 250 milliseconds between updates (not used)
 
     def handle_search_completion(self):
-        # status_label.config(text="Search completed.")
-        print("Search completed")
-        # Dibujamos el camino
-        print("Final path: ", self.last_path)
+        # Print the final path
+        print("Search completed -> Final path: ", self.last_path)
 
+        # Paint all nodes of the resulting path in black
         final_path_nodes = [node.state for node in self.last_path]
         nx.draw_networkx_nodes(self.graph_data.G, self.graph_data.pos, nodelist=final_path_nodes, node_color='black', node_size=1300)
 
-        # Dibujar las etiquetas de los nodos del camino en blanco
+        # Set the label text white for every black node
         nx.draw_networkx_labels(self.graph_data.G, self.graph_data.pos, labels={n: n for n in final_path_nodes}, font_color='white', font_size=10)
 
     def advance_graph(self):
         try:
             self.generated, self.visited, self.path_cost, self.path, self.closed, self.fringe = self.search.next()
-            self.position += 1 # Save current iteration
+            self.position += 1
             self.last_path = self.path.copy()
             self.update_graph()
         except StopIteration:
@@ -111,7 +112,7 @@ class GraphVisualizer:
     def reverse_graph(self):
         try:
             self.generated, self.visited, self.path_cost, self.path, self.closed, self.fringe = self.search.prev()
-            self.position -= 1  # Almacenamos la posicion del iterador
+            self.position -= 1
             self.last_path = self.path.copy()
             self.update_graph()
         except IndexError:

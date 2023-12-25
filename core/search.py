@@ -126,7 +126,6 @@ def branch_and_bound_underestimation(problem) -> Node:
     return graph_search(problem, deque(), underestimation)
 
 
-
 class BidirectionalIterator:
     """ Bidirectional Iterator that allows the UI to go forward and backwards in search process """
     def __init__(self, generator):
@@ -141,7 +140,7 @@ class BidirectionalIterator:
         else:
             try:
                 next_item = next(self.generator)
-                # Hacer una copia profunda de los elementos mutables
+                # Makes deepcopy from the mutable elements
                 next_item_copy = self._deep_copy_item(next_item)
                 self.history.append(next_item_copy)
                 self.index += 1
@@ -156,17 +155,9 @@ class BidirectionalIterator:
         else:
             raise IndexError("Already at the first item")
 
-    def _deep_copy_item(self, item):
+    @staticmethod
+    def _deep_copy_item(item):
         generated, visited, path_cost, path, closed, fringe = item
         closed_copy = copy.deepcopy(closed)
         fringe_copy = copy.deepcopy(fringe)
         return generated, visited, path_cost, path, closed_copy, fringe_copy
-
-    def printi(self, elem):
-        g, v, pc, p, c, f = elem
-        print(f"Generated: {g}")
-        print(f"Visited: {v}")
-        print(f"Path Cost: {pc}")
-        print(f"Path: {p}")
-        print(f"Closed: {c}")
-        print(f"Fringe: {f}")

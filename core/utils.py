@@ -536,7 +536,6 @@ class FIFOQueue(Queue):
     def __iter__(self):
         return iter(self.A[self.start:])
 
-
     def __str__(self):
         return str(self.A[self.start:])
 
