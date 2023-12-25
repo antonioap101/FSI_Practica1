@@ -48,6 +48,10 @@ To provide a more user-friendly experience for visualizing the evolution of each
 
 ![UI_PHOTO1](./assets/ui_photo1.jpg)
 
+![UI_PHOTO2](./assets/ui_photo2.jpg)
+
+![UI_PHOTO3](./assets/ui_photo3.jpg)
+
 ## Implemented Tests
 To verify the correct functioning of the implemented algorithms, the following tests have been developed and checked:
 
@@ -82,4 +86,3 @@ Contributions to the project are welcome. If you wish to contribute, please foll
 This project is licensed under the GNU General Public License v3.0. For more information, see the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ---
-

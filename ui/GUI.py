@@ -37,6 +37,7 @@ class GUI:
     def __load_assets(self):
         self.custom_font = font.Font(family='Helvetica', size=14, weight='bold')
         self.button_design_image = tk.PhotoImage(file='assets/button_design.png')
+        self.selected_button_design_image = tk.PhotoImage(file='assets/selected_button_design.png')
         self.right_arrow_image = tk.PhotoImage(file='assets/right_arrow.png')
         self.left_arrow_image = tk.PhotoImage(file='assets/left_arrow.png')
 
@@ -49,7 +50,7 @@ class GUI:
         canvas_widget.pack(fill=tk.BOTH, expand=True)
 
         # Add label to show algorithm status
-        self.status_label = tk.Label(self.graph_frame, text="", justify=tk.LEFT, font=self.custom_font)
+        self.status_label = tk.Label(self.graph_frame, text="\n\n", justify=tk.LEFT, font=self.custom_font)
         self.status_label.pack(side=tk.BOTTOM, anchor='sw')
 
     def __setup_right_frame(self):
@@ -78,39 +79,50 @@ class GUI:
         self.route_selector.pack(side=tk.TOP)
         self.route_selector.current(0)  # Establecer la selección predeterminada
 
+        # Bind the function to the Combobox's selection event
+        self.route_selector.bind("<<ComboboxSelected>>", self.__on_route_selected)
+
+
     def __create_buttons(self):
-        # Custom button design
-        button_style = {'fg': 'black', 'font': ('Helvetica', 16, 'bold'),
-                        'borderwidth': 0, 'relief': tk.FLAT, 'compound': tk.CENTER,
-                        'image': self.button_design_image}
+        # Common button style
+        self.button_style = {'fg': 'black', 'font': ('Helvetica', 16, 'bold'),
+                        'borderwidth': 0, 'relief': tk.FLAT, 'compound': tk.CENTER}
 
-        # Custom button design
-        button_style2 = {'fg': 'black', 'font': ('Helvetica', 16, 'bold'),
-                         'borderwidth': 0, 'relief': tk.FLAT, 'compound': tk.CENTER,
-                         'image': self.right_arrow_image}
-
-        # Custom button design
-        button_style3 = {'fg': 'black', 'font': ('Helvetica', 16, 'bold'),
-                         'borderwidth': 0, 'relief': tk.FLAT, 'compound': tk.CENTER,
-                         'image': self.left_arrow_image}
-
-        # Create buttons for each search algorithm
-        bfs_button = tk.Button(self.right_frame, text='BFS', command=self.__on_bfs, **button_style)
-        dfs_button = tk.Button(self.right_frame, text='DFS', command=self.__on_dfs, **button_style)
-        bab_button = tk.Button(self.right_frame, text='B&B', command=self.__on_bab, **button_style)
-        bab_s_button = tk.Button(self.right_frame, text='B&B Sub', command=self.__on_bab_s, **button_style)
+        # Button creation with dynamic image assignment
+        self.bfs_button = self.create_button('BFS', self.__on_bfs, self.button_design_image)
+        self.dfs_button = self.create_button('DFS', self.__on_dfs, self.button_design_image)
+        self.bab_button = self.create_button('B&B', self.__on_bab, self.button_design_image)
+        self.bab_s_button = self.create_button('B&B Sub', self.__on_bab_s, self.button_design_image)
 
         # Adjust button position
-        for b in [bfs_button, dfs_button, bab_button, bab_s_button]:
+        for b in [self.bfs_button, self.dfs_button, self.bab_button, self.bab_s_button]:
             b.pack(side=tk.TOP, pady=10)
 
         # Button to advance execution step by step
-        advance_button = tk.Button(self.right_frame, text="", command=self.__advance_ui, **button_style2)
+        advance_button = tk.Button(self.right_frame, text="", command=self.__advance_ui,
+                                   image=self.right_arrow_image, **self.button_style)
         advance_button.pack(side=tk.RIGHT, pady=10)
 
         # Button to reverse execution step by step
-        reverse_button = tk.Button(self.right_frame, text="", command=self.__reverse_ui, **button_style3)
+        reverse_button = tk.Button(self.right_frame, text="", command=self.__reverse_ui,
+                                   image=self.left_arrow_image, **self.button_style)
         reverse_button.pack(side=tk.LEFT, pady=10)
+
+    def create_button(self, text, command, image):
+        button = tk.Button(self.right_frame, text=text, command=lambda: self.button_click(command, button),
+                           image=image, **self.button_style)
+        button.pack(side=tk.TOP, pady=10)
+        return button
+
+    def button_click(self, command, selected_button):
+        # Reset all buttons to their original design
+        for button in [self.bfs_button, self.dfs_button, self.bab_button, self.bab_s_button]:
+            button.config(image=self.button_design_image)
+
+        # Change the selected button's image
+        selected_button.config(image=self.selected_button_design_image)
+        # Perform the command associated with the button
+        command()
 
     def __create_legend(self):
         # Create a frame to hold color circles and their descriptions
@@ -147,11 +159,19 @@ class GUI:
             # Updates te bottom label with current values
             self.status_label.config(
                 text=f"Generated: {generated}, Visited: {visited}, Path Cost: {path_cost}, Step: {position}\n"
-                     f"Visited: {closed}\nFringe: {fringe}"
+                     f"Visited: {closed}\nFringe: {fringe}",
+                font=self.custom_font,
+                fg="black"
             )
             self.canvas.draw()
         else:
-            print("Search Algorithm not set!")
+            # Display the status label in red with the same message
+            self.status_label.config(
+                text="Search Algorithm not set! Choose one of the four search algorithms\n",
+                font=("Helvetica", 24, "bold"),
+                fg="red"  # Set text color to red
+
+            )
 
     def __get_selected_problem(self):
         selected_route = self.route_selector.get().split(' - ')
@@ -159,6 +179,21 @@ class GUI:
             start, end = selected_route
             return GPSProblem(start, end, romania)
         return None
+
+    # Define the function to be called when a route is selected
+    def __on_route_selected(self, event):
+        # Update the selected algorithm to None
+        self.graph_data.algorithm = None
+
+        # Re-Draw original graph
+        self.graph_visualizer.draw_original_graph()
+
+        # We flush the bottom label
+        self.status_label.config(text="\n\n", justify=tk.LEFT, font=self.custom_font)
+
+        # Reset all buttons to their original design
+        for button in [self.bfs_button, self.dfs_button, self.bab_button, self.bab_s_button]:
+            button.config(image=self.button_design_image)
 
     def __on_dfs(self):
         print("DFS algorithm")
