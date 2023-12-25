@@ -48,6 +48,7 @@ class GraphVisualizer:
         edge_labels = nx.get_edge_attributes(self.graph_data.G, 'weight')
         nx.draw_networkx_edge_labels(self.graph_data.G, self.graph_data.pos,
                                      edge_labels=edge_labels, font_size=8)
+
         plt.axis('off')
 
         # Actualiza la figura y el gráfico

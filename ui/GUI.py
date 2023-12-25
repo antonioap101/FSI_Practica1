@@ -160,14 +160,17 @@ class GUI:
             self.status_label.config(
                 text=f"Generated: {generated}, Visited: {visited}, Path Cost: {path_cost}, Step: {position}\n"
                      f"Visited: {closed}\nFringe: {fringe}",
+                font=self.custom_font,
                 fg="black"
             )
             self.canvas.draw()
         else:
             # Display the status label in red with the same message
             self.status_label.config(
-                text="Search Algorithm not set!\n\n",
+                text="Search Algorithm not set! Choose one of the four search algorithms\n",
+                font=("Helvetica", 24, "bold"),
                 fg="red"  # Set text color to red
+
             )
 
     def __get_selected_problem(self):
@@ -184,6 +187,9 @@ class GUI:
 
         # Re-Draw original graph
         self.graph_visualizer.draw_original_graph()
+
+        # We flush the bottom label
+        self.status_label.config(text="\n\n", justify=tk.LEFT, font=self.custom_font)
 
         # Reset all buttons to their original design
         for button in [self.bfs_button, self.dfs_button, self.bab_button, self.bab_s_button]:
