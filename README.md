@@ -4,9 +4,9 @@
 
 This project, "Search Algorithm Viewer," is a Python-based visualizer for graph search algorithms. It provides a Graphical User Interface (GUI) to visualize the operations of various search algorithms on graphs or networks, making it an excellent educational tool for understanding algorithmic behavior in graph theory.
 
-## Project Objetives
+## Project Objectives
 
-The project's primary objective, as described in the attached PDF, revolves around developing and comparing search algorithms. The tasks include:
+The project's primary objective, as described in the practice instructions, revolves around developing and comparing search algorithms. The tasks include:
 
 1. Implementing the Branch and Bound search strategy, utilizing the Romanian cities graph provided in the base code.
 2. Comparing the number of nodes expanded by this method against Breadth-First Search and Depth-First Search methods.
