@@ -1,4 +1,4 @@
-# FSI Practice 1: Search Algorithm Viewer
+# Search Algorithm Viewer
 
 ## Description
 
